@@ -1,2 +1,3 @@
-# vector-simd-library
-Vector operations with simd support.
+## vector-simd-library
+
+Simple library for vector operations using SIMD support.

@@ -1,0 +1,8 @@
+*main_test*
+compile*
+
+vsl.h~
+#vsl.h#
+
+#.gitignore#
+.gitignore~
