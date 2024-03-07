@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <assert.h>
 
+// TODO: Remove in the future (just for testing)
+#include <stdio.h>
+
 #define VSLAPI static
 
 #define VSL_NOT_IMPLEMENTED(msg) assert(!(msg))
@@ -101,12 +104,12 @@ VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w) {
 	//dst[95:64] := SELECT4(b[127:0], imm8[5:4])
 	//dst[127:96] := SELECT4(b[127:0], imm8[7:6])
 	
-	__m128 tmp0 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
-	__m128 tmp1 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
-	__m128 tmp2 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
-	__m128 tmp3 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
+	__m128 t0 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
+	__m128 t1 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
+	__m128 t2 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
+	__m128 t3 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
 	
-	return (vsl_V4f)_mm_sub_ps(_mm_mul_ps(tmp0, tmp1), _mm_mul_ps(tmp2, tmp3));
+	return (vsl_V4f)_mm_sub_ps(_mm_mul_ps(t0, t1), _mm_mul_ps(t2, t3));
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v) {
@@ -123,8 +126,6 @@ VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w) {
 
 
 
-// TODO: Remove when testing is not needed anymore.
-#include <stdio.h>
 VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
 	printf("[%f, %f, %f, %f]\n", v.v0, v.v1, v.v2, v.v3);
 }
