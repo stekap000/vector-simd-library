@@ -6,6 +6,7 @@
 #include <immintrin.h>
 #include <stdint.h>
 #include <assert.h>
+#include <math.h>
 
 // TODO: Remove in the future (just for testing)
 #include <stdio.h>
@@ -49,24 +50,28 @@ VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
-
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
+
+VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v);
+VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v);
+VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
+VSLAPI inline float vsl_v4f_sum(vsl_V4f v);
+VSLAPI inline float vsl_v4f_lensq(vsl_V4f v);
+VSLAPI inline float vsl_v4f_len(vsl_V4f v);
 
 VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
-
 VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w);
 VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w);
 
-VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
-VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
-VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
+VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v);
+VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f &v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
-
-
 
 VSLAPI inline void vsl_v4f_print(vsl_V4f v);
 VSLAPI inline void vsl_v4i_print(vsl_V4i v);
@@ -99,34 +104,17 @@ VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w) {
 	return (vsl_V4i)_mm_sub_epi32(v.vec, w.vec);
 }
 
-VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w){
-	*v = (vsl_V4f)_mm_add_ps(v->vec, w.vec);
+VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v) {
+	VSL_NOT_IMPLEMENTED("Scale not implemented");
 }
 
-VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w){
-	*v = (vsl_V4f)_mm_sub_ps(v->vec, w.vec);
+VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v) {
+	VSL_NOT_IMPLEMENTED("Unit not implemented");
 }
-
-VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w){
-	*v = (vsl_V4f)_mm_mul_ps(v->vec, w.vec);
-}
-
-VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w){
-	*v = (vsl_V4f)_mm_div_ps(v->vec, w.vec);
-}
-
-VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w){
-	*v = (vsl_V4i)_mm_add_epi32(v->vec, w.vec);
-}
-
-VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w){
-	*v = (vsl_V4i)_mm_sub_epi32(v->vec, w.vec);
-}
-
 
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
-	VSL_NOT_IMPLEMENTED("Dot product not yet implemented");
-	return 0;
+	vsl_V4f u = (vsl_V4f)_mm_mul_ps(v.vec, w.vec);
+	return u.x + u.y + u.z + u.w;
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w) {
@@ -156,13 +144,57 @@ VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w) {
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v) {
-	return vsl_v4f_mul(v, v);
+	return (vsl_V4f)_mm_mul_ps(v.vec, v.vec);
+}
+
+VSLAPI inline float vsl_v4f_sum(vsl_V4f v) {
+	return v.x + v.y + v.z + v.w;
+}
+
+VSLAPI inline float vsl_v4f_lensq(vsl_V4f v){
+	vsl_V4f u = (vsl_V4f)_mm_mul_ps(v.vec, v.vec);
+	return u.x + u.y + u.z + u.w;
+}
+
+VSLAPI inline float vsl_v4f_len(vsl_V4f v){
+	return sqrtf(vsl_v4f_lensq(v));
+}
+
+VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_add_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_sub_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_mul_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_div_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w){
+	*v = (vsl_V4i)_mm_add_epi32(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w){
+	*v = (vsl_V4i)_mm_sub_epi32(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v) {
+	VSL_NOT_IMPLEMENTED("Scale mut not implemented");
+}
+
+VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f &v) {
+	VSL_NOT_IMPLEMENTED("Unit mut not implemented");
 }
 
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v) {
-	vsl_v4f_mul_mut(v, *v);
+	*v = (vsl_V4f)_mm_mul_ps(v->vec, v->vec);
 }
-
 
 VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
 	printf("[%f, %f, %f, %f]\n", v.v0, v.v1, v.v2, v.v3);
@@ -173,3 +205,10 @@ VSLAPI inline void vsl_v4i_print(vsl_V4i v) {
 }
 
 #endif // VSL_IMPLEMENTATION
+
+// TODO: Test inline functions vs corresponding macros since most functions are
+// extremely simple.
+// TODO: Test vector instructions usage for cases where they are followed by
+// ordinary instructions.
+// TODO: Test how explicit loading of wide register impacts performance in
+// functions like vector scale.
