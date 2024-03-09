@@ -53,7 +53,7 @@ VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
 
-VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v);
+VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s);
 VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v);
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
@@ -69,7 +69,7 @@ VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w);
 VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w);
 
-VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v);
+VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v, float s);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f &v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
@@ -104,7 +104,7 @@ VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w) {
 	return (vsl_V4i)_mm_sub_epi32(v.vec, w.vec);
 }
 
-VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v) {
+VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s) {
 	VSL_NOT_IMPLEMENTED("Scale not implemented");
 }
 
@@ -184,7 +184,7 @@ VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w){
 	*v = (vsl_V4i)_mm_sub_epi32(v->vec, w.vec);
 }
 
-VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v) {
+VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f &v, float s) {
 	VSL_NOT_IMPLEMENTED("Scale mut not implemented");
 }
 
