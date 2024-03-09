@@ -49,6 +49,12 @@ VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
+
+VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w);
+VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w);
+VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w);
+VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
+
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
@@ -78,6 +84,22 @@ VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w) {
 
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_div_ps(v.vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_add_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_sub_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_mul_ps(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w){
+	*v = (vsl_V4f)_mm_div_ps(v->vec, w.vec);
 }
 
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
