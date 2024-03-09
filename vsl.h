@@ -14,6 +14,12 @@
 
 #define VSL_NOT_IMPLEMENTED(msg) assert(!(msg))
 
+// |  B  |  A  |
+// | o o | o o |
+// c3, c2 - Picking from second vector (B).
+// c1, c0 - Picking from first vector (A).
+// If ci has value 2, that means that we are picking 2nd 32bit float from corresponding
+// vector.
 #define VSL_MM_SHUFFLE_MASK(c3, c2, c1, c0) (((c3) << 6) + ((c2) << 4) + ((c1) << 2) + (c0))
 
 typedef union {
@@ -80,36 +86,29 @@ VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w) {
-	// V = (v0, v1, v2, 0)
-	// W = (w0, w1, w2, 0)
-	// 	
+	// V = | 0 | v2 | v1 | v0 | <--- lower
+	// W = | 0 | w2 | w1 | w0 | <--- lower
+
 	// V x W = (v1w2 - v2w1,
 	//  	    v2w0 - v0w2,
-	// 		    v0w1 - v1w0
-	//          0)
-	
-	// From intel intrinsics doc.
-	// Keeping this here for now because I always forget shuffle intrinsic mask positions.
-	//DEFINE SELECT4(src, control) {
-	//	CASE(control[1:0]) OF
-	//	0:	tmp[31:0] := src[31:0]
-	//	1:	tmp[31:0] := src[63:32]
-	//	2:	tmp[31:0] := src[95:64]
-	//	3:	tmp[31:0] := src[127:96]
-	//	ESAC
-	//	RETURN tmp[31:0]
-	//}
-	//dst[31:0] := SELECT4(a[127:0], imm8[1:0])
-	//dst[63:32] := SELECT4(a[127:0], imm8[3:2])
-	//dst[95:64] := SELECT4(b[127:0], imm8[5:4])
-	//dst[127:96] := SELECT4(b[127:0], imm8[7:6])
-	
-	__m128 t0 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
-	__m128 t1 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
-	__m128 t2 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
-	__m128 t3 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
-	
-	return (vsl_V4f)_mm_sub_ps(_mm_mul_ps(t0, t1), _mm_mul_ps(t2, t3));
+	// 		    v0w1 - v1w0,
+	//             0 -    0)
+
+	// V x W = | 0 | v0w1 - v1w0 | v2w0 - v0w2 | v1w2 - v2w1 | <--- lower
+
+	// | 0 | v0 | v2 | v1 |
+	__m128 u0 = _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
+	// | 0 | w1 | w0 | w2 |
+	__m128 u1 = _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 1, 0, 2));
+	// | 0 | v0w2 | v2w1 | v1w0 | <--- crucial step (notice that this mul gives us
+	// all factors that come after minus in cross product, just not in the right order).
+	__m128 u2 = _mm_mul_ps(u0, w.vec);
+	// | 0 | v0w1 | v2w0 | v1w2 |
+	__m128 u3 = _mm_mul_ps(u0, u1);
+	// | 0 | v1w0 | v0w2 | v2w1 | <--- ordered factors from crucial step
+	__m128 u4 = _mm_shuffle_ps(u2, u2, VSL_MM_SHUFFLE_MASK(3, 0, 2, 1));
+	// V x W
+	return (vsl_V4f)_mm_sub_ps(u3, u4);
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v) {
