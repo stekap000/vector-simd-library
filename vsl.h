@@ -50,21 +50,26 @@ VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 
+VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
+VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
+
 VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_sub_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
 
+VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w);
+VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w);
+
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
-
-VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
-VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
+VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
 
 
 VSLAPI inline void vsl_v4f_print(vsl_V4f v);
+VSLAPI inline void vsl_v4i_print(vsl_V4i v);
 
 #endif // VSL_H
 
@@ -86,6 +91,14 @@ VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_div_ps(v.vec, w.vec);
 }
 
+VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w) {
+	return (vsl_V4i)_mm_add_epi32(v.vec, w.vec);
+}
+
+VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w) {
+	return (vsl_V4i)_mm_sub_epi32(v.vec, w.vec);
+}
+
 VSLAPI inline void vsl_v4f_add_mut(vsl_V4f *v, vsl_V4f w){
 	*v = (vsl_V4f)_mm_add_ps(v->vec, w.vec);
 }
@@ -101,6 +114,15 @@ VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w){
 VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w){
 	*v = (vsl_V4f)_mm_div_ps(v->vec, w.vec);
 }
+
+VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w){
+	*v = (vsl_V4i)_mm_add_epi32(v->vec, w.vec);
+}
+
+VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w){
+	*v = (vsl_V4i)_mm_sub_epi32(v->vec, w.vec);
+}
+
 
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
 	VSL_NOT_IMPLEMENTED("Dot product not yet implemented");
@@ -137,18 +159,17 @@ VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v) {
 	return vsl_v4f_mul(v, v);
 }
 
-VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w) {
-	return (vsl_V4i)_mm_add_epi32(v.vec, w.vec);
+VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v) {
+	vsl_v4f_mul_mut(v, *v);
 }
-
-VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w) {
-	return (vsl_V4i)_mm_sub_epi32(v.vec, w.vec);
-}
-
 
 
 VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
 	printf("[%f, %f, %f, %f]\n", v.v0, v.v1, v.v2, v.v3);
+}
+
+VSLAPI inline void vsl_v4i_print(vsl_V4i v) {
+	printf("[%d, %d, %d, %d]\n", v.v0, v.v1, v.v2, v.v3);
 }
 
 #endif // VSL_IMPLEMENTATION
