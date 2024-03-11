@@ -89,11 +89,13 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
+VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A);
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s);
+VSLAPI inline void vsl_m4x4f_map_mut(vsl_V4f *v, vsl_M4x4f A);
 
 // TEST
 VSLAPI void vsl_v4f_print(vsl_V4f v);
@@ -250,6 +252,7 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B){
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B) {
 	VSL_NOT_IMPLEMENTED("");
+	
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
@@ -260,6 +263,39 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
 	M.c2 = (vsl_V4f)_mm_mul_ps(A.c2.vec, v.vec);
 	M.c3 = (vsl_V4f)_mm_mul_ps(A.c3.vec, v.vec);
 	return M;
+}
+
+VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A) {
+	/*
+	  |o o o o| |a|                                       |ao bo co do|
+	  |o o o o| |b|                                       |ao bo co do|
+	  |o o o o| |c|                                       |ao bo co do|
+	  |o o o o| |d| ---Expand the vector and the muls---> |ao bo co do|
+	*/
+	
+	__m128 mc0 = _mm_mul_ps(A.c0.vec, _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0)));
+	__m128 mc1 = _mm_mul_ps(A.c1.vec, _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1)));
+	__m128 mc2 = _mm_mul_ps(A.c2.vec, _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2)));
+	__m128 mc3 = _mm_mul_ps(A.c3.vec, _mm_shuffle_ps(v.vec, v.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3)));
+	
+	/*
+	  Horizontal add ---->
+
+	  |ao|   |bo|   |co|   |do|
+	  |ao|   |bo|   |co|   |do|
+	  |ao|   |bo|   |co|   |do|
+	  |ao| + |bo| + |co| + |do|
+
+	  One horizontal sum is the corresponding coordinate of the resulting vector.
+
+	  Not sure if this is the case, but I feel like this kind of addition is slower
+	  that summing vectors in pairs and then summing the results, because here, every
+	  addition is dependent on previous result, thus stalling processing more.
+
+	  return _mm_add_ps(_mm_add_ps(_mm_add_ps(mc0, mc1), mc2), mc3);
+	 */
+	
+	return (vsl_V4f)_mm_add_ps(_mm_add_ps(mc0, mc1), _mm_add_ps(mc2, mc3));
 }
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B){
@@ -278,6 +314,7 @@ VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B){
 
 VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B) {
 	VSL_NOT_IMPLEMENTED("");
+	
 }
 
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
@@ -286,6 +323,15 @@ VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
 	A->c1 = (vsl_V4f)_mm_mul_ps(A->c1.vec, v.vec);
 	A->c2 = (vsl_V4f)_mm_mul_ps(A->c2.vec, v.vec);
 	A->c3 = (vsl_V4f)_mm_mul_ps(A->c3.vec, v.vec);
+}
+
+VSLAPI inline void vsl_m4x4f_map_mut(vsl_V4f *v, vsl_M4x4f A) {
+	__m128 mc0 = _mm_mul_ps(A.c0.vec, _mm_shuffle_ps(v->vec, v->vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0)));
+	__m128 mc1 = _mm_mul_ps(A.c1.vec, _mm_shuffle_ps(v->vec, v->vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1)));
+	__m128 mc2 = _mm_mul_ps(A.c2.vec, _mm_shuffle_ps(v->vec, v->vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2)));
+	__m128 mc3 = _mm_mul_ps(A.c3.vec, _mm_shuffle_ps(v->vec, v->vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3)));
+
+	*v = (vsl_V4f)_mm_add_ps(_mm_add_ps(mc0, mc1), _mm_add_ps(mc2, mc3));
 }
 
 
