@@ -52,6 +52,8 @@ typedef union {
 	vsl_V4f cols[4];
 } vsl_M4x4f;
 
+typedef float v4[4];
+
 // TODO: Parameters are copied, which is slow.
 // Work on raw data or on types?
 // Raw data -> efficient, Types -> convenient
@@ -89,9 +91,9 @@ VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
-VSLAPI inline void vsl_m4x4f_add(vsl_M4x4f *A, vsl_M4x4f B);
-VSLAPI inline void vsl_m4x4f_sub(vsl_M4x4f *A, vsl_M4x4f B);
-VSLAPI inline void vsl_m4x4f_scale(vsl_M4x4f *A, float s);
+VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B);
+VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B);
+VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s);
 
 VSLAPI inline void vsl_v4f_print(vsl_V4f v);
 VSLAPI inline void vsl_v4i_print(vsl_V4i v);
