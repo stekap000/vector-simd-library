@@ -23,23 +23,6 @@
 // vector.
 #define VSL_MM_SHUFFLE_MASK(c3, c2, c1, c0) (((c3) << 6) + ((c2) << 4) + ((c1) << 2) + (c0))
 
-typedef float v4f[4];
-
-// TODO: For now, there is no prefix because there will be clash with deprecated
-// functions.
-
-VSLAPI inline void v4f_add(v4f v, v4f w, v4f u);
-VSLAPI inline void v4f_sub(v4f v, v4f w, v4f u);
-VSLAPI inline void v4f_mul(v4f v, v4f w, v4f u);
-VSLAPI inline void v4f_div(v4f v, v4f w, v4f u);
-
-VSLAPI inline void v4f_add_mut(v4f v, v4f w);
-VSLAPI inline void v4f_sub_mut(v4f v, v4f w);
-VSLAPI inline void v4f_mul_mut(v4f v, v4f w);
-VSLAPI inline void v4f_div_mut(v4f v, v4f w);
-
-#ifdef VSL_DEPRECATED
-
 typedef union {
 	struct {
 		float v0, v1, v2, v3;
@@ -69,6 +52,8 @@ typedef union {
 	vsl_V4f cols[4];
 } vsl_M4x4f;
 
+// TODO: Return and parameter pass copy slowdown for now.
+
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
@@ -96,9 +81,6 @@ VSLAPI inline void vsl_v4f_inv_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
-// TODO: For now, return is copied. It should be changed to pointer,
-// but then it is annoying to use. Resolve this.
-// Mutable version do not have either of these problems.
 VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
@@ -109,13 +91,9 @@ VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s);
 VSLAPI inline void vsl_v4f_print(vsl_V4f v);
 VSLAPI inline void vsl_v4i_print(vsl_V4i v);
 
-#endif // VSL_DEPRECATED
-
 #endif // VSL_H
 
 #ifdef VSL_IMPLEMENTATION
-
-#ifdef VSL_DEPRECATED
 
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_add_ps(v.vec, w.vec);
@@ -243,6 +221,31 @@ VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v) {
 	*v = (vsl_V4f)_mm_mul_ps(v->vec, v->vec);
 }
 
+VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
+	VSL_NOT_IMPLEMENTED("");
+}
+
+
 VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
 	printf("[%f, %f, %f, %f]\n", v.v0, v.v1, v.v2, v.v3);
 }
@@ -250,8 +253,6 @@ VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
 VSLAPI inline void vsl_v4i_print(vsl_V4i v) {
 	printf("[%d, %d, %d, %d]\n", v.v0, v.v1, v.v2, v.v3);
 }
-
-#endif // VSL_DEPRECATED
 
 #endif // VSL_IMPLEMENTATION
 
