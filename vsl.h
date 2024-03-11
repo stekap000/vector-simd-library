@@ -45,6 +45,16 @@ typedef union {
 	uint32_t arr[4];
 } vsl_V4i;
 
+typedef union {
+	struct {
+		vsl_V4f c0, c1, c2, c3;
+	};
+	vsl_V4f cols[4];
+} vsl_M4x4f;
+
+// TODO: Parameters are copied, which is slow.
+// Work on raw data or on types?
+// Raw data -> efficient, Types -> convenient
 
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
@@ -52,7 +62,6 @@ VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
-
 VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s);
 VSLAPI inline vsl_V4f vsl_v4f_inv(vsl_V4f v);
 VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v);
@@ -69,14 +78,24 @@ VSLAPI inline void vsl_v4f_mul_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w);
 VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w);
-
 VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f *v, float s);
 VSLAPI inline void vsl_v4f_inv_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
+// TODO: For now, return is copied. It should be changed to pointer,
+// but then it is annoying to use. Resolve this.
+// Mutable version do not have either of these problems.
+VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
+VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
+VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
+VSLAPI inline void vsl_m4x4f_add(vsl_M4x4f *A, vsl_M4x4f B);
+VSLAPI inline void vsl_m4x4f_sub(vsl_M4x4f *A, vsl_M4x4f B);
+VSLAPI inline void vsl_m4x4f_scale(vsl_M4x4f *A, float s);
+
 VSLAPI inline void vsl_v4f_print(vsl_V4f v);
 VSLAPI inline void vsl_v4i_print(vsl_V4i v);
+
 
 #endif // VSL_H
 
