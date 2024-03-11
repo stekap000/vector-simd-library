@@ -53,7 +53,10 @@ typedef union {
 } vsl_M4x4f;
 
 // TODO: Return and parameter pass copy slowdown for now.
+// Resolve later such that there is minimal copy and minimal
+// inconvenience.
 
+// VECTOR
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
@@ -81,15 +84,21 @@ VSLAPI inline void vsl_v4f_inv_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
+// MATRIX
 VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
+VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
+
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B);
+VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s);
 
-VSLAPI inline void vsl_v4f_print(vsl_V4f v);
-VSLAPI inline void vsl_v4i_print(vsl_V4i v);
+// TEST
+VSLAPI void vsl_v4f_print(vsl_V4f v);
+VSLAPI void vsl_v4i_print(vsl_V4i v);
+VSLAPI void vsl_M4x4f_print(vsl_M4x4f A);
 
 #endif // VSL_H
 
@@ -222,36 +231,80 @@ VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v) {
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B){
-	VSL_NOT_IMPLEMENTED("");
+	vsl_M4x4f M = {0};
+	M.c0 = (vsl_V4f)_mm_add_ps(A.c0.vec, B.c0.vec);
+	M.c1 = (vsl_V4f)_mm_add_ps(A.c1.vec, B.c1.vec);
+	M.c2 = (vsl_V4f)_mm_add_ps(A.c2.vec, B.c2.vec);
+	M.c3 = (vsl_V4f)_mm_add_ps(A.c3.vec, B.c3.vec);
+	return M;
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B){
+	vsl_M4x4f M = {0};
+	M.c0 = (vsl_V4f)_mm_sub_ps(A.c0.vec, B.c0.vec);
+	M.c1 = (vsl_V4f)_mm_sub_ps(A.c1.vec, B.c1.vec);
+	M.c2 = (vsl_V4f)_mm_sub_ps(A.c2.vec, B.c2.vec);
+	M.c3 = (vsl_V4f)_mm_sub_ps(A.c3.vec, B.c3.vec);
+	return M;
+}
+
+VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B) {
 	VSL_NOT_IMPLEMENTED("");
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
-	VSL_NOT_IMPLEMENTED("");
+	vsl_V4f v = {{s, s, s, s}};
+	vsl_M4x4f M = {0};
+	M.c0 = (vsl_V4f)_mm_mul_ps(A.c0.vec, v.vec);
+	M.c1 = (vsl_V4f)_mm_mul_ps(A.c1.vec, v.vec);
+	M.c2 = (vsl_V4f)_mm_mul_ps(A.c2.vec, v.vec);
+	M.c3 = (vsl_V4f)_mm_mul_ps(A.c3.vec, v.vec);
+	return M;
 }
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B){
-	VSL_NOT_IMPLEMENTED("");
+	A->c0 = (vsl_V4f)_mm_add_ps(A->c0.vec, B.c0.vec);
+	A->c1 = (vsl_V4f)_mm_add_ps(A->c1.vec, B.c1.vec);
+	A->c2 = (vsl_V4f)_mm_add_ps(A->c2.vec, B.c2.vec);
+	A->c3 = (vsl_V4f)_mm_add_ps(A->c3.vec, B.c3.vec);
 }
 
 VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B){
+	A->c0 = (vsl_V4f)_mm_sub_ps(A->c0.vec, B.c0.vec);
+	A->c1 = (vsl_V4f)_mm_sub_ps(A->c1.vec, B.c1.vec);
+	A->c2 = (vsl_V4f)_mm_sub_ps(A->c2.vec, B.c2.vec);
+	A->c3 = (vsl_V4f)_mm_sub_ps(A->c3.vec, B.c3.vec);
+}
+
+VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B) {
 	VSL_NOT_IMPLEMENTED("");
 }
 
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
-	VSL_NOT_IMPLEMENTED("");
+	vsl_V4f v = {{s, s, s, s}};
+	A->c0 = (vsl_V4f)_mm_mul_ps(A->c0.vec, v.vec);
+	A->c1 = (vsl_V4f)_mm_mul_ps(A->c1.vec, v.vec);
+	A->c2 = (vsl_V4f)_mm_mul_ps(A->c2.vec, v.vec);
+	A->c3 = (vsl_V4f)_mm_mul_ps(A->c3.vec, v.vec);
 }
 
 
-VSLAPI inline void vsl_v4f_print(vsl_V4f v) {
+
+VSLAPI void vsl_v4f_print(vsl_V4f v) {
 	printf("[%f, %f, %f, %f]\n", v.v0, v.v1, v.v2, v.v3);
 }
 
-VSLAPI inline void vsl_v4i_print(vsl_V4i v) {
+VSLAPI void vsl_v4i_print(vsl_V4i v) {
 	printf("[%d, %d, %d, %d]\n", v.v0, v.v1, v.v2, v.v3);
+}
+
+VSLAPI void vsl_M4x4f_print(vsl_M4x4f A) {
+	printf("----------------------------------------\n");
+	vsl_v4f_print(A.c0);
+	vsl_v4f_print(A.c1);
+	vsl_v4f_print(A.c2);
+	vsl_v4f_print(A.c3);
+	printf("----------------------------------------\n");
 }
 
 #endif // VSL_IMPLEMENTATION
@@ -261,4 +314,4 @@ VSLAPI inline void vsl_v4i_print(vsl_V4i v) {
 // TODO: Test vector instructions usage for cases where they are followed by
 // ordinary instructions.
 // TODO: Test how explicit loading of wide register impacts performance in
-// functions like vector scale.
+// functions like vector scale (or matrix scale).
