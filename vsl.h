@@ -251,8 +251,74 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B){
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B) {
-	VSL_NOT_IMPLEMENTED("");
+	/*
+	  |a0 a1 a2 a3| |x0 y0 z0 w0|
+	  |b0 b1 b2 b3| |x1 y1 z1 w1|
+	  |c0 c1 c2 c3| |x2 y2 z2 w2|
+	  |d0 d1 d2 d3| |x3 y3 z3 w3|
+
+	  Laying out row of the resulting matrix shows patterns, but the problem
+	  is that operations in that case would be bad for cache since we store
+	  columns in memory, one after the other.
+
+	  Laying out column of the resulting matrix also shows patterns, plus
+	  it is adjusted to our way of storing things, so we go with that.
+
+	  This is how it looks for first resulting column.
+
+	  00 = a0x0 + a1x1 + a2x2 + a3x3
+	  10 = b0x0 + b1x1 + b2x2 + b3x3
+	  20 = c0x0 + c1x1 + c2x2 + c3x3
+	  30 = d0x0 + d1x1 + d2x2 + d3x3
+	*/
 	
+	vsl_M4x4f M = {0};
+	
+	// Result column 0
+	__m128 bx = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	__m128 by = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	__m128 bz = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	__m128 bw = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	__m128 m_0 = _mm_mul_ps(A.c0.vec, bx);
+	__m128 m_1 = _mm_mul_ps(A.c1.vec, by);
+	__m128 m_2 = _mm_mul_ps(A.c2.vec, bz);
+	__m128 m_3 = _mm_mul_ps(A.c3.vec, bw);
+	M.c0.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 1
+	bx = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(A.c0.vec, bx);
+	m_1 = _mm_mul_ps(A.c1.vec, by);
+	m_2 = _mm_mul_ps(A.c2.vec, bz);
+	m_3 = _mm_mul_ps(A.c3.vec, bw);
+	M.c1.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 2
+	bx = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(A.c0.vec, bx);
+	m_1 = _mm_mul_ps(A.c1.vec, by);
+	m_2 = _mm_mul_ps(A.c2.vec, bz);
+	m_3 = _mm_mul_ps(A.c3.vec, bw);
+	M.c2.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 3
+	bx = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(A.c0.vec, bx);
+	m_1 = _mm_mul_ps(A.c1.vec, by);
+	m_2 = _mm_mul_ps(A.c2.vec, bz);
+	m_3 = _mm_mul_ps(A.c3.vec, bw);
+	M.c3.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	return M;
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
@@ -293,7 +359,7 @@ VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A) {
 	  addition is dependent on previous result, thus stalling processing more.
 
 	  return _mm_add_ps(_mm_add_ps(_mm_add_ps(mc0, mc1), mc2), mc3);
-	 */
+	*/
 	
 	return (vsl_V4f)_mm_add_ps(_mm_add_ps(mc0, mc1), _mm_add_ps(mc2, mc3));
 }
@@ -344,7 +410,7 @@ VSLAPI void vsl_v4i_print(vsl_V4i v) {
 	printf("[%d, %d, %d, %d]\n", v.v0, v.v1, v.v2, v.v3);
 }
 
-VSLAPI void vsl_M4x4f_print(vsl_M4x4f A) {
+VSLAPI void vsl_m4x4f_print(vsl_M4x4f A) {
 	printf("----------------------------------------\n");
 	vsl_v4f_print(A.c0);
 	vsl_v4f_print(A.c1);
@@ -361,3 +427,8 @@ VSLAPI void vsl_M4x4f_print(vsl_M4x4f A) {
 // ordinary instructions.
 // TODO: Test how explicit loading of wide register impacts performance in
 // functions like vector scale (or matrix scale).
+// TODO: Test if compiler does one wide register load in cases where something
+// like v->vec is used multiple times.
+// TODO: Test if compiler does preload if it sees definition of __m128 before usage.
+// I feel like this can be detected with static analysis.
+// TODO: Test impact of reusage of __m128 vars.
