@@ -379,8 +379,58 @@ VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B){
 }
 
 VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B) {
-	VSL_NOT_IMPLEMENTED("");
+	// Since we are modifying matrix A, but also using it in further calculation,
+	// we need some temporary storage for original values of A.
+	// In order to avoid creating additional matrix on the stack, we use
+	// B matrix such that we store column of A (before its usage) in column of
+	// B that was already used in calculation and won't be used after it.
 	
+	// Result column 0
+	__m128 bx = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	__m128 by = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	__m128 bz = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	__m128 bw = _mm_shuffle_ps(B.c0.vec, B.c0.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	__m128 m_0 = _mm_mul_ps(A->c0.vec, bx);
+	__m128 m_1 = _mm_mul_ps(A->c1.vec, by);
+	__m128 m_2 = _mm_mul_ps(A->c2.vec, bz);
+	__m128 m_3 = _mm_mul_ps(A->c3.vec, bw);
+	B.c0.vec = A->c0.vec;
+	A->c0.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 1
+	bx = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c1.vec, B.c1.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(B.c0.vec, bx);
+	m_1 = _mm_mul_ps(A->c1.vec, by);
+	m_2 = _mm_mul_ps(A->c2.vec, bz);
+	m_3 = _mm_mul_ps(A->c3.vec, bw);
+	B.c1.vec = A->c1.vec;
+	A->c1.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 2
+	bx = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c2.vec, B.c2.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(B.c0.vec, bx);
+	m_1 = _mm_mul_ps(B.c1.vec, by);
+	m_2 = _mm_mul_ps(A->c2.vec, bz);
+	m_3 = _mm_mul_ps(A->c3.vec, bw);
+	B.c2.vec = A->c2.vec;
+	A->c2.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
+
+	// Result column 3
+	bx = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0));
+	by = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1));
+	bz = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2));
+	bw = _mm_shuffle_ps(B.c3.vec, B.c3.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3));
+	m_0 = _mm_mul_ps(B.c0.vec, bx);
+	m_1 = _mm_mul_ps(B.c1.vec, by);
+	m_2 = _mm_mul_ps(B.c2.vec, bz);
+	m_3 = _mm_mul_ps(A->c3.vec, bw);
+	A->c3.vec = _mm_add_ps(_mm_add_ps(m_0, m_1), _mm_add_ps(m_2, m_3));
 }
 
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
