@@ -60,6 +60,7 @@ typedef union {
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_V4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
@@ -89,12 +90,18 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_mul(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s);
+VSLAPI inline vsl_M4x4f vsl_m4x4f_transpose(vsl_M4x4f A);
+VSLAPI inline vsl_M4x4f vsl_m4x4f_inv(vsl_M4x4f A);
 VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A);
+VSLAPI inline float vsl_m4x4f_det(vsl_M4x4f A);
+VSLAPI inline float vsl_m4x4f_sum(vsl_M4x4f A);
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_sub_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_mul_mut(vsl_M4x4f *A, vsl_M4x4f B);
 VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s);
+VSLAPI inline void vsl_m4x4f_transpose_mut(vsl_M4x4f *A);
+VSLAPI inline void vsl_m4x4f_inv_mut(vsl_M4x4f *A);
 VSLAPI inline void vsl_m4x4f_map_mut(vsl_V4f *v, vsl_M4x4f A);
 
 // TEST
@@ -116,6 +123,10 @@ VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w) {
 
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_mul_ps(v.vec, w.vec);
+}
+
+VSLAPI inline vsl_V4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w) {
+	VSL_NOT_IMPLEMENTED("");
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w) {
@@ -331,6 +342,14 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
 	return M;
 }
 
+VSLAPI inline vsl_M4x4f vsl_m4x4f_transpose(vsl_M4x4f A) {
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline vsl_M4x4f vsl_m4x4f_inv(vsl_M4x4f A) {
+	VSL_NOT_IMPLEMENTED("");
+}
+
 VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A) {
 	/*
 	  |o o o o| |a|                                       |ao bo co do|
@@ -362,6 +381,14 @@ VSLAPI inline vsl_V4f vsl_m4x4f_map(vsl_V4f v, vsl_M4x4f A) {
 	*/
 	
 	return (vsl_V4f)_mm_add_ps(_mm_add_ps(mc0, mc1), _mm_add_ps(mc2, mc3));
+}
+
+VSLAPI inline float vsl_m4x4f_det(vsl_M4x4f A) {
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline float vsl_m4x4f_sum(vsl_M4x4f A) {
+	VSL_NOT_IMPLEMENTED("");
 }
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B){
@@ -439,6 +466,14 @@ VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
 	A->c1 = (vsl_V4f)_mm_mul_ps(A->c1.vec, v.vec);
 	A->c2 = (vsl_V4f)_mm_mul_ps(A->c2.vec, v.vec);
 	A->c3 = (vsl_V4f)_mm_mul_ps(A->c3.vec, v.vec);
+}
+
+VSLAPI inline void vsl_m4x4f_transpose_mut(vsl_M4x4f *A) {
+	VSL_NOT_IMPLEMENTED("");
+}
+
+VSLAPI inline void vsl_m4x4f_inv_mut(vsl_M4x4f *A) {
+	VSL_NOT_IMPLEMENTED("");
 }
 
 VSLAPI inline void vsl_m4x4f_map_mut(vsl_V4f *v, vsl_M4x4f A) {
