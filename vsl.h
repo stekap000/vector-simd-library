@@ -52,15 +52,15 @@ typedef union {
 	vsl_V4f cols[4];
 } vsl_M4x4f;
 
-// TODO: Return and parameter pass copy slowdown for now.
-// Resolve later such that there is minimal copy and minimal
-// inconvenience.
+// TODO: Realize minimal copy and minimal inconvenience.
+// Passing things by reference, as well as passing vectors/matrices
+// that represent result, instead of returning it by copy.
 
 // VECTOR
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w);
-VSLAPI inline vsl_V4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_M4x4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
@@ -125,8 +125,15 @@ VSLAPI inline vsl_V4f vsl_v4f_mul(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_mul_ps(v.vec, w.vec);
 }
 
-VSLAPI inline vsl_V4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w) {
-	VSL_NOT_IMPLEMENTED("");
+VSLAPI inline vsl_M4x4f vsl_v4f_tensor_mul(vsl_V4f v, vsl_V4f w) {
+	vsl_M4x4f M = {0};
+	
+	M.c0 = (vsl_V4f)_mm_mul_ps(v.vec, _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(0, 0, 0, 0)));
+	M.c1 = (vsl_V4f)_mm_mul_ps(v.vec, _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(1, 1, 1, 1)));
+	M.c2 = (vsl_V4f)_mm_mul_ps(v.vec, _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(2, 2, 2, 2)));
+	M.c3 = (vsl_V4f)_mm_mul_ps(v.vec, _mm_shuffle_ps(w.vec, w.vec, VSL_MM_SHUFFLE_MASK(3, 3, 3, 3)));
+
+	return M;
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w) {
@@ -389,6 +396,7 @@ VSLAPI inline float vsl_m4x4f_det(vsl_M4x4f A) {
 
 VSLAPI inline float vsl_m4x4f_sum(vsl_M4x4f A) {
 	VSL_NOT_IMPLEMENTED("");
+	
 }
 
 VSLAPI inline void vsl_m4x4f_add_mut(vsl_M4x4f *A, vsl_M4x4f B){
