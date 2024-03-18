@@ -55,6 +55,7 @@ typedef union {
 // TODO: Realize minimal copy and minimal inconvenience.
 // Passing things by reference, as well as passing vectors/matrices
 // that represent result, instead of returning it by copy.
+// Not doing this yet since it is not computational core.
 
 // VECTOR
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
@@ -350,7 +351,52 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_scale(vsl_M4x4f A, float s){
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_transpose(vsl_M4x4f A) {
-	VSL_NOT_IMPLEMENTED("");
+	vsl_M4x4f M = {0};
+	
+	/*
+	  Main problem here is that we can't do anything in parallel if we take single
+	  column. If we look at first two columns, we know that they need to become rows.
+	  So, one thing that we can do is divide matrix into blocks (drawn below).
+	  We will store first block info (b f a e) into one vector and second block info
+	  (d h c g) info into second vector by using shuffle since it allows us to operate
+	  on two vectors at the same time. Order doesn't really matter as long as we
+	  know how we coded it and as long as given order can be created with shuffle.
+	  For my shuffle, given order is most natural, at least for me.
+	  Then, we can use two vectors that we just created and operate twice with shuffle
+	  on them to create two resulting columns.
+	  We do the same for other blocks.
+
+	  I can't think of something else for now that is also parallel like this.
+	
+	  Starting point
+	  |a b | c d|
+	  |e f | g h|
+	  -----------
+	  |i j | k l|
+	  |m n | o p|
+
+	  Intended result
+	  |a e i m|
+	  |b f j n|
+	  |c g k o|
+	  |d h l p|
+	*/
+	
+	// b0 = (b f a e)
+	__m128 b0 = _mm_shuffle_ps(A.c0.vec, A.c1.vec, VSL_MM_SHUFFLE_MASK(0, 1, 0, 1));
+	// b1 = (d h c g)
+	__m128 b1 = _mm_shuffle_ps(A.c2.vec, A.c3.vec, VSL_MM_SHUFFLE_MASK(0, 1, 0, 1));
+	// b2 = (j n i m)
+	__m128 b2 = _mm_shuffle_ps(A.c0.vec, A.c1.vec, VSL_MM_SHUFFLE_MASK(2, 3, 2, 3));
+	// b3 = (l p k o)
+	__m128 b3 = _mm_shuffle_ps(A.c2.vec, A.c3.vec, VSL_MM_SHUFFLE_MASK(2, 3, 2, 3));
+	
+	M.c0.vec = _mm_shuffle_ps(b1, b0, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
+	M.c1.vec = _mm_shuffle_ps(b1, b0, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	M.c2.vec = _mm_shuffle_ps(b3, b2, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
+	M.c3.vec = _mm_shuffle_ps(b3, b2, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+
+	return M;
 }
 
 VSLAPI inline vsl_M4x4f vsl_m4x4f_inv(vsl_M4x4f A) {
