@@ -523,7 +523,15 @@ VSLAPI inline void vsl_m4x4f_scale_mut(vsl_M4x4f *A, float s){
 }
 
 VSLAPI inline void vsl_m4x4f_transpose_mut(vsl_M4x4f *A) {
-	VSL_NOT_IMPLEMENTED("");
+	__m128 b0 = _mm_shuffle_ps(A->c1.vec, A->c0.vec, VSL_MM_SHUFFLE_MASK(1, 0, 1, 0));
+	__m128 b1 = _mm_shuffle_ps(A->c3.vec, A->c2.vec, VSL_MM_SHUFFLE_MASK(1, 0, 1, 0));
+	__m128 b2 = _mm_shuffle_ps(A->c1.vec, A->c0.vec, VSL_MM_SHUFFLE_MASK(3, 2, 3, 2));
+	__m128 b3 = _mm_shuffle_ps(A->c3.vec, A->c2.vec, VSL_MM_SHUFFLE_MASK(3, 2, 3, 2));
+	
+	A->c0.vec = _mm_shuffle_ps(b0, b1, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	A->c1.vec = _mm_shuffle_ps(b0, b1, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
+	A->c2.vec = _mm_shuffle_ps(b2, b3, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	A->c3.vec = _mm_shuffle_ps(b2, b3, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
 }
 
 VSLAPI inline void vsl_m4x4f_inv_mut(vsl_M4x4f *A) {
