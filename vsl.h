@@ -16,7 +16,7 @@
 #define VSL_NOT_IMPLEMENTED(msg) assert(!(msg))
 
 // |  B  |  A  |
-// | o o | o o |
+// | o o | o o | <----- lower address
 // c3, c2 - Picking from second vector (B).
 // c1, c0 - Picking from first vector (A).
 // If ci has value 2, that means that we are picking 2nd 32bit float from corresponding
@@ -382,19 +382,19 @@ VSLAPI inline vsl_M4x4f vsl_m4x4f_transpose(vsl_M4x4f A) {
 	  |d h l p|
 	*/
 	
-	// b0 = (b f a e)
-	__m128 b0 = _mm_shuffle_ps(A.c0.vec, A.c1.vec, VSL_MM_SHUFFLE_MASK(0, 1, 0, 1));
-	// b1 = (d h c g)
-	__m128 b1 = _mm_shuffle_ps(A.c2.vec, A.c3.vec, VSL_MM_SHUFFLE_MASK(0, 1, 0, 1));
-	// b2 = (j n i m)
-	__m128 b2 = _mm_shuffle_ps(A.c0.vec, A.c1.vec, VSL_MM_SHUFFLE_MASK(2, 3, 2, 3));
-	// b3 = (l p k o)
-	__m128 b3 = _mm_shuffle_ps(A.c2.vec, A.c3.vec, VSL_MM_SHUFFLE_MASK(2, 3, 2, 3));
+	// b0 = lower -> (b f a e)
+	__m128 b0 = _mm_shuffle_ps(A.c1.vec, A.c0.vec, VSL_MM_SHUFFLE_MASK(1, 0, 1, 0));
+	// b1 = lower -> (d h c g)
+	__m128 b1 = _mm_shuffle_ps(A.c3.vec, A.c2.vec, VSL_MM_SHUFFLE_MASK(1, 0, 1, 0));
+	// b2 = lower -> (j n i m)
+	__m128 b2 = _mm_shuffle_ps(A.c1.vec, A.c0.vec, VSL_MM_SHUFFLE_MASK(3, 2, 3, 2));
+	// b3 = lower -> (l p k o)
+	__m128 b3 = _mm_shuffle_ps(A.c3.vec, A.c2.vec, VSL_MM_SHUFFLE_MASK(3, 2, 3, 2));
 	
-	M.c0.vec = _mm_shuffle_ps(b1, b0, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
-	M.c1.vec = _mm_shuffle_ps(b1, b0, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
-	M.c2.vec = _mm_shuffle_ps(b3, b2, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
-	M.c3.vec = _mm_shuffle_ps(b3, b2, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	M.c0.vec = _mm_shuffle_ps(b0, b1, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	M.c1.vec = _mm_shuffle_ps(b0, b1, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
+	M.c2.vec = _mm_shuffle_ps(b2, b3, VSL_MM_SHUFFLE_MASK(0, 2, 0, 2));
+	M.c3.vec = _mm_shuffle_ps(b2, b3, VSL_MM_SHUFFLE_MASK(1, 3, 1, 3));
 
 	return M;
 }
