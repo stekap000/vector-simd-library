@@ -61,10 +61,11 @@ VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4i vsl_v4i_sub(vsl_V4i v, vsl_V4i w);
 VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s);
+VSLAPI inline vsl_V4f vsl_v4f_double(vsl_V4f v);
 VSLAPI inline vsl_V4f vsl_v4f_inv(vsl_V4f v);
 VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v);
 VSLAPI inline float	  vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
-VSLAPI inline vsl_V4f vsl_v4f_dot4(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_V4f vsl_v4f_dotv(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
 VSLAPI inline float	  vsl_v4f_sum(vsl_V4f v);
@@ -78,8 +79,9 @@ VSLAPI inline void vsl_v4f_div_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4i_add_mut(vsl_V4i *v, vsl_V4i w);
 VSLAPI inline void vsl_v4i_sub_mut(vsl_V4i *v, vsl_V4i w);
 VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f *v, float s);
+VSLAPI inline void vsl_v4f_double_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_inv_mut(vsl_V4f *v);
-VSLAPI inline void vsl_v4f_dot4_mut(vsl_V4f *v, vsl_V4f w);
+VSLAPI inline void vsl_v4f_dotv_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
@@ -153,6 +155,10 @@ VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s) {
 	return (vsl_V4f)_mm_mul_ps(v.vec, u.vec);
 }
 
+VSLAPI inline vsl_V4f vsl_v4f_double(vsl_V4f v) {
+	return (vsl_V4f)_mm_add_ps(v.vec, v.vec);
+}
+
 VSLAPI inline vsl_V4f vsl_v4f_inv(vsl_V4f v) {
 	return vsl_v4f_scale(v, -1);
 }
@@ -166,7 +172,7 @@ VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
 	return u.x + u.y + u.z + u.w;
 }
 
-VSLAPI inline vsl_V4f vsl_v4f_dot4(vsl_V4f v, vsl_V4f w) {
+VSLAPI inline vsl_V4f vsl_v4f_dotv(vsl_V4f v, vsl_V4f w) {
 	// lower -> (a b c d)
 	__m128 u0 = _mm_mul_ps(v.vec, w.vec);
 	// lower -> (c d a b)
@@ -251,11 +257,15 @@ VSLAPI inline void vsl_v4f_scale_mut(vsl_V4f *v, float s) {
 	*v = (vsl_V4f)_mm_mul_ps(v->vec, u.vec);
 }
 
+VSLAPI inline void vsl_v4f_double_mut(vsl_V4f *v) {
+	v->vec = _mm_add_ps(v->vec, v->vec);
+}
+
 VSLAPI inline void vsl_v4f_inv_mut(vsl_V4f *v) {
 	vsl_v4f_scale_mut(v, -1);
 }
 
-VSLAPI inline void vsl_v4f_dot4_mut(vsl_V4f *v, vsl_V4f w) {
+VSLAPI inline void vsl_v4f_dotv_mut(vsl_V4f *v, vsl_V4f w) {
 	__m128 u0 = _mm_mul_ps(v->vec, w.vec);
 	__m128 u1 = _mm_shuffle_ps(u0, u0, VSL_MM_SHUFFLE_MASK(1, 0, 3, 2));
 	__m128 u2 = _mm_add_ps(u0, u1);
