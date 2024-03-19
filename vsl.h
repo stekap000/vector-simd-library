@@ -52,11 +52,6 @@ typedef union {
 	vsl_V4f cols[4];
 } vsl_M4x4f;
 
-// TODO: Realize minimal copy and minimal inconvenience.
-// Passing things by reference, as well as passing vectors/matrices
-// that represent result, instead of returning it by copy.
-// Not doing this yet since it is not computational core.
-
 // VECTOR
 VSLAPI inline vsl_V4f vsl_v4f_add(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sub(vsl_V4f v, vsl_V4f w);
@@ -69,6 +64,7 @@ VSLAPI inline vsl_V4f vsl_v4f_scale(vsl_V4f v, float s);
 VSLAPI inline vsl_V4f vsl_v4f_inv(vsl_V4f v);
 VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v);
 VSLAPI inline float	  vsl_v4f_dot(vsl_V4f v, vsl_V4f w);
+VSLAPI inline vsl_V4f vsl_v4f_dot4(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w);
 VSLAPI inline vsl_V4f vsl_v4f_sq(vsl_V4f v);
 VSLAPI inline float	  vsl_v4f_sum(vsl_V4f v);
@@ -141,6 +137,7 @@ VSLAPI inline vsl_V4f vsl_v4f_div(vsl_V4f v, vsl_V4f w) {
 	return (vsl_V4f)_mm_div_ps(v.vec, w.vec);
 }
 
+
 VSLAPI inline vsl_V4i vsl_v4i_add(vsl_V4i v, vsl_V4i w) {
 	return (vsl_V4i)_mm_add_epi32(v.vec, w.vec);
 }
@@ -165,6 +162,19 @@ VSLAPI inline vsl_V4f vsl_v4f_unit(vsl_V4f v) {
 VSLAPI inline float vsl_v4f_dot(vsl_V4f v, vsl_V4f w) {
 	vsl_V4f u = (vsl_V4f)_mm_mul_ps(v.vec, w.vec);
 	return u.x + u.y + u.z + u.w;
+}
+
+VSLAPI inline vsl_V4f vsl_v4f_dot4(vsl_V4f v, vsl_V4f w) {
+	// lower -> (a b c d)
+	__m128 u0 = _mm_mul_ps(v.vec, w.vec);
+	// lower -> (c d a b)
+	__m128 u1 = _mm_shuffle_ps(u0, u0, VSL_MM_SHUFFLE_MASK(1, 0, 3, 2));
+	// lower -> (a+c, b+d, a+c, b+d)
+	__m128 u2 = _mm_add_ps(u0, u1);
+	// lower -> (b+d, a+c, b+d, a+c)
+	__m128 u3 = _mm_shuffle_ps(u2, u2, VSL_MM_SHUFFLE_MASK(0, 1, 2, 3));
+	// lower -> (a+b+c+d, a+b+c+d, a+b+c+d, a+b+c+d)
+	return (vsl_V4f)_mm_add_ps(u2, u3);
 }
 
 VSLAPI inline vsl_V4f vsl_v4f_cross(vsl_V4f v, vsl_V4f w) {
@@ -568,6 +578,13 @@ VSLAPI void vsl_m4x4f_print(vsl_M4x4f A) {
 
 #endif // VSL_IMPLEMENTATION
 
+// TODO: Force usage of wide registers instead of doing roundtrip through memory
+// towards general purpose ones.
+// TODO: Realize minimal copy and minimal inconvenience.
+// Passing things by reference, as well as passing vectors/matrices
+// that represent result, instead of returning it by copy.
+// Not doing this yet since it is not computational core.
+
 // TODO: Test inline functions vs corresponding macros since most functions are
 // extremely simple.
 // TODO: Test vector instructions usage for cases where they are followed by
@@ -579,3 +596,5 @@ VSLAPI void vsl_m4x4f_print(vsl_M4x4f A) {
 // TODO: Test if compiler does preload if it sees definition of __m128 before usage.
 // I feel like this can be detected with static analysis.
 // TODO: Test impact of reusage of __m128 vars.
+// TODO: Test __m128 vs some custom type even though custom type can be interpreted
+// as __m128.
