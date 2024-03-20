@@ -85,7 +85,6 @@ VSLAPI inline void vsl_v4f_dotv_mut(vsl_V4f *v, vsl_V4f w);
 VSLAPI inline void vsl_v4f_unit_mut(vsl_V4f *v);
 VSLAPI inline void vsl_v4f_sq_mut(vsl_V4f *v);
 
-
 // MATRIX
 VSLAPI inline vsl_M4x4f vsl_m4x4f_add(vsl_M4x4f A, vsl_M4x4f B);
 VSLAPI inline vsl_M4x4f vsl_m4x4f_sub(vsl_M4x4f A, vsl_M4x4f B);
