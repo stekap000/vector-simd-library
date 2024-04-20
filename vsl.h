@@ -603,6 +603,9 @@ VSLAPI void vsl_m4x4f_print(vsl_M4x4f A) {
 // Passing things by reference, as well as passing vectors/matrices
 // that represent result, instead of returning it by copy.
 // Not doing this yet since it is not computational core.
+// TODO: Return results of computation through function parameters instead of return.
+// This allows more control, for the user, of when things are copied, created etc.
+// TODO: Structure aligning for intrinsics.
 
 // TODO: Test inline functions vs corresponding macros since most functions are
 // extremely simple.
